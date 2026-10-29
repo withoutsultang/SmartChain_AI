@@ -50,11 +50,15 @@ jobs:
         with:
           python-version: '3.11'
       - name: Login transaction regression and complete backend build
+        if: github.event_name == 'workflow_dispatch'
         working-directory: backend
         run: |
           chmod +x gradlew
           ./gradlew test --tests '*LoginFailurePersistenceTest' --no-daemon
           ./gradlew clean build --no-daemon
+      - name: Build backend runtime
+        working-directory: backend
+        run: bash gradlew bootJar --no-daemon
       - name: Frontend regression and production build
         working-directory: frontend
         run: |

@@ -162,7 +162,7 @@ try:
                 p.insert_image(p.rect, stream=image_data)
             else:
                 p.insert_textbox(fitz.Rect(40,40,660,460), '\n'.join(['SMARTCHAIN SYNTHETIC TEST',label,'Date: '+date.today().isoformat(),'Prepared by: Demo User','Signature: Demo User','Portfolio integration test only. No actual business evidence.']), fontsize=15)
-            data=doc.tobytes(); doc.close()
+            data=doc.tobytes(deflate=True, garbage=4); doc.close()
             uploaded=req('POST',f'/diagnostics/{diagnostic_id}/files',drafter,files={'file':(filename,data,'application/pdf')})
             docs.append({'file_id':str(uploaded['fileId']),'slot_name':slot})
         deadline=time.monotonic()+60
