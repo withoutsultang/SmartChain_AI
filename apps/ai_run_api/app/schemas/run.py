@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, JsonValue
 
 Domain = Literal["safety", "compliance", "esg"]
 Verdict = Literal["PASS", "NEED_FIX", "NEED_CLARIFY"]
@@ -68,7 +68,7 @@ class SlotResult(BaseModel):
     reasons: list[str] = []
     file_ids: list[str] = []
     file_names: list[str] = []
-    extras: dict[str, str] = Field(default_factory=dict)
+    extras: dict[str, JsonValue] = Field(default_factory=dict)
 
 
 class Clarification(BaseModel):
@@ -84,4 +84,5 @@ class SubmitResponse(BaseModel):
     why: str
     slot_results: list[SlotResult]
     clarifications: list[Clarification] = []
-    extras: dict[str, str] = Field(default_factory=dict)
+    extras: dict[str, JsonValue] = Field(default_factory=dict)
+
