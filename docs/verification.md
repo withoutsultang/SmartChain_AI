@@ -6,7 +6,7 @@
 
 |범위|결과|근거|
 |---|---|---|
-|백엔드 전체 테스트·빌드|444개 중 443개 통과, 1개 건너뜀, 실패·오류 0개; clean build 성공|[테스트 집계](verification/backend-test-summary.json) · [백엔드 빌드](https://github.com/withoutsultang/SmartChain_Backend/actions/runs/40818713584)|
+|백엔드 전체 테스트·빌드|486개 중 485개 통과, 1개 건너뜀, 실패·오류 0개; clean build 성공|[테스트 집계](verification/backend-test-summary.json) · [백엔드 빌드](https://github.com/withoutsultang/SmartChain_Backend/actions/runs/40881578096)|
 |로그인 트랜잭션 회귀 시험|H2에서 서비스 트랜잭션 종료 후 실패 횟수·잠금 조회 성공|[회귀 시험](https://github.com/withoutsultang/SmartChain_Backend/blob/d259f900d798cadc210d556b574bfc456f5035d8/src/test/java/com/smartchain/platform/domain/auth/service/LoginFailurePersistenceTest.java)|
 |PostgreSQL 인증 검증|실제 HTTP 로그인 실패 5회가 각각 커밋됨; locked_until 저장; 올바른 비밀번호도 잠금 중 거절|[성공 실행](https://github.com/withoutsultang/SmartChain_AI/actions/runs/40825484560)|
 |프론트 빌드·회귀 시험|프로덕션 빌드 및 Preview 3개·로그인 보안 정책 3개 통과|[프론트 실행](https://github.com/withoutsultang/SmartChain_Frontend/actions/runs/40824538098)|
@@ -36,7 +36,13 @@ AI Preview가 현재 요구하는 ESG 증빙 9개를 합성 PDF로 생성했습�
 
 이 개선은 포트폴리오 재검증 시점의 보강입니다. 팀 프로젝트 당시 기여와 구분하며, 당시 개인 기여는 각 저장소 README의 원본 PR에 연결했습니다.
 
-## 실행한 소스
+## 추가 AI 권한 검증
+
+동일한 PostgreSQL HTTP 시험으로 보완 전후를 대조하고, AI 5개 경로의 회사·도메인·소유권 검사 및 Preview 파일 소속 검증 **42개를 통과**했습니다. 정상 기안자·결재자·도메인 수신자의 접근도 함께 확인했습니다. 권한 시험은 외부 AI와 비동기 실행 경계만 대체하므로 유료 API를 호출하지 않습니다. 이 추가 검증은 [Backend acc662fb](https://github.com/withoutsultang/SmartChain_Backend/commit/acc662fb69c1554127966ece5251980bec917eee)를 대상으로 했습니다.
+
+[상세 근거](https://github.com/withoutsultang/SmartChain_Backend/blob/dev/docs/ai-authorization-verification.md) · [PostgreSQL HTTP 실행](https://github.com/withoutsultang/SmartChain_Backend/actions/runs/40881578094)
+
+## 최초 통합 시연에 사용한 소스
 
 - [Backend d259f900](https://github.com/withoutsultang/SmartChain_Backend/commit/d259f900d798cadc210d556b574bfc456f5035d8)
 - [Frontend 7a4997f7](https://github.com/withoutsultang/SmartChain_Frontend/commit/7a4997f7a39130102057300a6962433f16806fb8)
