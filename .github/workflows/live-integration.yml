@@ -60,6 +60,7 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run test:preview
+          npm run test:auth
           npm run build
       - name: Install AI-run and browser dependencies
         run: |

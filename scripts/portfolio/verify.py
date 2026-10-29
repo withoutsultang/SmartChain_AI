@@ -59,8 +59,8 @@ async def external_preflight(image):
             check('Live OpenAI ' + model, {'usage': result.usage.model_dump()})
         except Exception as exc:
             report['checks'].append({'name': 'Live OpenAI ' + model, 'passed': False,
-                'error_type': type(exc).__name__, 'status': getattr(exc, 'status_code', None)})
-            print('FAIL: Live OpenAI', model, type(exc).__name__, getattr(exc, 'status_code', None), flush=True)
+                'error_type': type(exc).__name__, 'status': getattr(exc, 'status_code', None), 'provider_code': getattr(exc, 'code', None)})
+            print('FAIL: Live OpenAI', model, type(exc).__name__, getattr(exc, 'status_code', None), getattr(exc, 'code', None), flush=True)
     from app.extractors.ocr.clova_client import run_ocr
     try:
         text = await run_ocr(image, 'png')
@@ -88,7 +88,11 @@ def browser_login(browser, email):
     page.get_by_placeholder('이메일을 입력해주세요.').fill(email)
     page.get_by_placeholder('비밀번호를 입력해주세요.').fill('Test1234!')
     page.get_by_role('button', name='로그인', exact=True).click()
-    page.wait_for_url('**/dashboard', timeout=20000)
+    try:
+        page.wait_for_url('**/dashboard', timeout=20000)
+    except Exception:
+        page.screenshot(path=str(OUT/'login-failure.png'), full_page=True)
+        raise
     return context, page
 
 try:
@@ -141,13 +145,18 @@ try:
         check('Browser creates a real persisted ESG diagnostic')
         assert db.execute('SELECT status FROM diagnostic WHERE diagnostic_id=%s', (diagnostic_id,)).fetchone()[0] == 'WRITING'
 
-        # Four required ESG slots. Real local file storage and real AI extraction.
+        # All nine currently required AI ESG slots. Real local files and extraction.
         docs = []
         for filename, slot, label, scanned in [
             ('electricity_usage.pdf','esg.energy.electricity.usage','Electricity usage kWh 2026 monthly: 1000',False),
             ('gas_usage.pdf','esg.energy.gas.usage','Gas usage cubic metres 2026 monthly: 100',False),
             ('msds.pdf','esg.hazmat.msds','Material Safety Data Sheet. Material: water. CAS 7732-18-5. Low hazard.',False),
-            ('ethics_code.pdf','esg.ethics.code','Code of Ethics',True)]:
+            ('ethics_code.pdf','esg.ethics.code','Code of Ethics',True),
+            ('water_usage.pdf','esg.energy.water.usage','Water usage cubic metres 2026 monthly: 50',False),
+            ('chemical_inventory.pdf','esg.hazmat.inventory','Chemical inventory. Material water CAS 7732-18-5. Quantity 100 litres.',False),
+            ('ethics_distribution_log.pdf','esg.ethics.distribution.log','Ethics distribution log. Demo User received the policy.',False),
+            ('ethics_pledge.pdf','esg.ethics.pledge','Ethics pledge. Demo User agrees to anti-bribery rules.',False),
+            ('ethics_poster.pdf','esg.ethics.poster.image','Ethics campaign poster. Fair trade and anti-bribery.',False)]:
             doc = fitz.open(); p = doc.new_page(width=700, height=500)
             if scanned:
                 p.insert_image(p.rect, stream=image_data)
@@ -159,13 +168,13 @@ try:
         deadline=time.monotonic()+60
         while time.monotonic()<deadline:
             rows=req('GET',f'/diagnostics/{diagnostic_id}/files',drafter)
-            if len(rows)==4 and all(x['parsingStatus']=='SUCCESS' for x in rows): break
+            if len(rows)==len(docs) and all(x['parsingStatus']=='SUCCESS' for x in rows): break
             time.sleep(1)
         else: raise AssertionError('File processing did not finish')
-        check('Upload four real PDFs; local storage and async file bookkeeping complete')
+        check('Upload nine real PDFs; local storage and async file bookkeeping complete')
         preview=req('POST',f'/ai/run/diagnostics/{diagnostic_id}/preview',drafter,json={'fileIds':[int(x['file_id']) for x in docs]})
         assert preview['package_id'] and not preview['missing_required_slots'], preview['missing_required_slots']
-        check('Backend to actual AI preview covers all four required ESG slots')
+        check('Backend to actual AI preview covers all nine required ESG slots')
         page.goto(WEB+f'/diagnostics/{diagnostic_id}/files')
         screenshot(page,'02-upload')
         before=len((OUT/'ai-usage.jsonl').read_text().splitlines()) if (OUT/'ai-usage.jsonl').exists() else 0
@@ -178,7 +187,7 @@ try:
             time.sleep(2)
         assert result, 'AI result was not persisted before deadline'
         (OUT/'analysis-result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
-        assert len(result['details']['slot_results']) >= 4
+        assert len(result['details']['slot_results']) >= len(docs)
         calls=[json.loads(line) for line in (OUT/'ai-usage.jsonl').read_text().splitlines()][before:]
         assert calls and all(x['success'] for x in calls), 'AI fallback occurred: inspect sanitized usage log'
         assert any(x['model']=='gpt-5.1' for x in calls)
