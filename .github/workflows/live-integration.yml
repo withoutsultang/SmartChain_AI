@@ -1,0 +1,117 @@
+name: Live portfolio integration
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/live-integration.yml']
+permissions:
+  contents: read
+concurrency:
+  group: live-portfolio-integration
+  cancel-in-progress: false
+jobs:
+  localhost-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: smartchain
+          POSTGRES_USER: esg
+          POSTGRES_PASSWORD: portfolio-local-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U esg -d smartchain"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ai
+      - uses: actions/checkout@v4
+        with:
+          repository: withoutsultang/SmartChain_Backend
+          ref: dev
+          path: backend
+      - uses: actions/checkout@v4
+        with:
+          repository: withoutsultang/SmartChain_Frontend
+          ref: develop
+          path: frontend
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Login transaction regression and complete backend build
+        working-directory: backend
+        run: |
+          chmod +x gradlew
+          ./gradlew test --tests '*LoginFailurePersistenceTest' --no-daemon
+          ./gradlew clean build --no-daemon
+      - name: Frontend regression and production build
+        working-directory: frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run test:preview
+          npm run build
+      - name: Install AI-run and browser dependencies
+        run: |
+          pip install 'fastapi>=0.110,<1' 'uvicorn>=0.27,<1' 'pydantic>=2.6,<3' python-dotenv httpx openai pandas openpyxl PyMuPDF Pillow PyYAML 'psycopg[binary]' playwright python-multipart
+          python -m playwright install --with-deps chromium
+          python -m unittest discover -s ai/tests -v
+      - name: Start isolated localhost backend, AI API and actual frontend
+        run: |
+          mkdir -p /tmp/portfolio-results
+          python ai/scripts/portfolio/configure_backend.py
+          java -jar backend/build/libs/platform-0.0.1-SNAPSHOT.jar --spring.config.location=file:/tmp/portfolio-backend.yaml > /tmp/backend.log 2>&1 &
+          PYTHONPATH="$PWD/ai/apps/ai_run_api" python ai/scripts/portfolio/start_ai.py > /tmp/ai.log 2>&1 &
+          (cd frontend && npm run dev -- --host 127.0.0.1 > /tmp/frontend.log 2>&1) &
+          python - <<'PY'
+          import time, urllib.request
+          for url in ('http://127.0.0.1:8080/health','http://127.0.0.1:8000/health','http://127.0.0.1:5173'):
+              for attempt in range(90):
+                  try:
+                      urllib.request.urlopen(url, timeout=2)
+                      break
+                  except Exception:
+                      time.sleep(2)
+              else:
+                  raise SystemExit('Local service did not start: ' + url)
+          PY
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CLOVA_INVOKE_URL: ${{ secrets.CLOVA_INVOKE_URL }}
+          CLOVA_OCR_SECRET: ${{ secrets.CLOVA_OCR_SECRET }}
+      - name: Live providers, PostgreSQL transactions, workflow and browser captures
+        run: PYTHONPATH="$PWD/ai/apps/ai_run_api" python ai/scripts/portfolio/verify.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CLOVA_INVOKE_URL: ${{ secrets.CLOVA_INVOKE_URL }}
+          CLOVA_OCR_SECRET: ${{ secrets.CLOVA_OCR_SECRET }}
+      - name: Sanitized service startup diagnostics
+        if: failure()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in ('backend','ai','frontend'):
+              p=Path('/tmp/'+name+'.log')
+              if p.exists():
+                  lines=[s for s in p.read_text().splitlines() if any(k in s for k in ('Exception','Caused by','Error','ERROR','APPLICATION FAILED','Description:'))]
+                  print(name, '\n'.join(lines[-12:]))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smartchain-integration-evidence
+          path: |
+            /tmp/portfolio-results/
+            backend/build/test-results/test/
+            backend/build/reports/tests/test/
+          retention-days: 7
