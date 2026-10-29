@@ -1,8 +1,41 @@
 name: Portfolio checks
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portfolio-checks.yml'
 permissions:
   contents: read
 jobs:
+  secret-configuration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required AI secrets without revealing values
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CLOVA_INVOKE_URL: ${{ secrets.CLOVA_INVOKE_URL }}
+          CLOVA_OCR_SECRET: ${{ secrets.CLOVA_OCR_SECRET }}
+        shell: python
+        run: |
+          import os
+          import sys
+          from urllib.parse import urlparse
+
+          names = ("OPENAI_API_KEY", "CLOVA_INVOKE_URL", "CLOVA_OCR_SECRET")
+          missing = []
+          for name in names:
+              present = bool(os.environ.get(name, "").strip())
+              print(f"{name}: {'configured' if present else 'MISSING'}")
+              if not present:
+                  missing.append(name)
+          if missing:
+              sys.exit(1)
+          parsed = urlparse(os.environ["CLOVA_INVOKE_URL"].strip())
+          if parsed.scheme != "https" or not parsed.hostname:
+              print("CLOVA_INVOKE_URL: invalid HTTPS URL format")
+              sys.exit(1)
+          print("All three secrets are available. No external API calls were made.")
   response-contract:
     runs-on: ubuntu-latest
     steps:
