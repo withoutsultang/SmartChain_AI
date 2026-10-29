@@ -227,6 +227,13 @@ except Exception as exc:
     print('VALIDATION FAILED:',type(exc).__name__, flush=True)
     if isinstance(exc, (AssertionError, RuntimeError)):
         print(str(exc)[:300], flush=True)
+    if 'page' in globals():
+        try:
+            page.screenshot(path=str(OUT/'failure-screen.png'), full_page=True)
+        except Exception:
+            pass
+    if isinstance(exc, psycopg.Error):
+        print('Database SQLSTATE:', exc.sqlstate, exc.diag.message_primary, flush=True)
     save()
     raise SystemExit(1)
 finally:

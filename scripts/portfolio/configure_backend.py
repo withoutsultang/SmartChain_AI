@@ -5,6 +5,7 @@ source = Path('backend/src/main/resources/application.yaml').read_text()
 config = yaml.safe_load(source.split('---')[1])
 config['spring'].pop('profiles', None)
 config['spring'].pop('config', None)
+config['spring']['profiles'] = {'active': 'local'}
 config['spring']['datasource'].update(url='jdbc:postgresql://localhost:5432/smartchain', username='esg', password='portfolio-local-only')
 config['spring']['jpa']['show-sql'] = False
 config['spring']['mail'] = {'host': 'localhost', 'port': 1025}
