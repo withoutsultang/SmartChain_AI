@@ -1,0 +1,132 @@
+{
+  "checks": [
+    {
+      "name": "PostgreSQL: five failed logins persist across HTTP transactions and lock rejects correct password",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Live OpenAI gpt-4o-mini",
+      "passed": true,
+      "detail": {
+        "usage": {
+          "completion_tokens": 2,
+          "prompt_tokens": 12,
+          "total_tokens": 14,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0,
+            "text_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cache_write_tokens": null,
+            "cached_tokens": 0,
+            "image_tokens": null,
+            "text_tokens": null
+          }
+        }
+      }
+    },
+    {
+      "name": "Live OpenAI gpt-5.1",
+      "passed": true,
+      "detail": {
+        "usage": {
+          "completion_tokens": 10,
+          "prompt_tokens": 11,
+          "total_tokens": 21,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0,
+            "text_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cache_write_tokens": null,
+            "cached_tokens": 0,
+            "image_tokens": null,
+            "text_tokens": null
+          }
+        }
+      }
+    },
+    {
+      "name": "Live Clova OCR",
+      "passed": true,
+      "detail": {
+        "recognized_test_marker": true
+      }
+    },
+    {
+      "name": "Browser creates a real persisted ESG diagnostic",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Upload nine real PDFs; local storage and async file bookkeeping complete",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Backend to actual AI preview covers all nine required ESG slots",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Real AI submit persists result; both LLM models completed without API fallback",
+      "passed": true,
+      "detail": {
+        "verdict": "NEED_CLARIFY",
+        "riskLevel": "MEDIUM",
+        "successful_calls": 11
+      }
+    },
+    {
+      "name": "ESG diagnostic submits to company approver",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Approver approves and forwards; Review persisted automatically",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Reviewer requests revision; PostgreSQL diagnostic status RETURNED",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Reviewer final approval after revision request; PostgreSQL COMPLETED",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Workflow audit history is queryable",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Actual application screenshots and short workflow GIF captured",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "sources": {
+    "backend": "d259f900d798cadc210d556b574bfc456f5035d8",
+    "frontend": "7a4997f7a39130102057300a6962433f16806fb8",
+    "ai": "e51f0586b3911a5c90e0b05d197d7d0c0d44ab0b"
+  },
+  "environment": "isolated localhost services on GitHub Actions",
+  "synthetic_data": true,
+  "workflow_ids": {
+    "diagnostic": 17,
+    "approval": 6,
+    "review": 7
+  }
+}

@@ -1,10 +1,20 @@
 # SmartChain AI Services
 
+[![Live integration](https://github.com/withoutsultang/SmartChain_AI/actions/workflows/live-integration.yml/badge.svg)](https://github.com/withoutsultang/SmartChain_AI/actions/workflows/live-integration.yml)
+
 > 증빙 분류·내용 검증·교차검증·규정 검색을 하나의 업무 플랫폼으로 연결하는 AI 서비스
 
 **KT AIVLE School 빅프로젝트 · 7인 팀 · 최우수상(2위)**
 
 협력사의 증빙 제출부터 검토·승인·보완 요청까지 연결하는 **AI 기반 공급망 리스크 관리 플랫폼**입니다. ESG·안전보건·하도급 컴플라이언스의 세 업무 영역을 하나의 제출·검토 흐름으로 구성했습니다.
+
+## 실제 서비스 시연
+
+![기안 생성부터 AI 분석·결재·심사까지 실제 화면 시연](https://raw.githubusercontent.com/withoutsultang/SmartChain_Frontend/develop/docs/demo/smartchain-demo.gif)
+
+**기안 생성 → 증빙 9개 업로드·분류 → 실제 AI 분석 → 회사 결재 → 원청 심사·보완 요청 → 최종 승인**을 연결했습니다. 합성 문서로 실제 서비스를 실행해 캡처한 15.4초 시연입니다.
+
+[화면 7개 보기](https://github.com/withoutsultang/SmartChain_Frontend/tree/develop/docs/demo) · [실행 결과와 검증 근거](https://github.com/withoutsultang/SmartChain_AI/blob/main/docs/verification.md)
 
 ## 플랫폼 구조
 
@@ -57,7 +67,7 @@ uvicorn app.main:app --reload --port 8002 --app-dir apps/out_risk_api
 python -m unittest discover -s tests -v
 ```
 
-검증 자동화는 **Actions → Portfolio checks → Run workflow**에서 실행할 수 있습니다.
+API 호출 없는 회귀 시험은 **Actions → Portfolio checks**, 실제 OpenAI·Clova·PostgreSQL·브라우저 검증은 **Actions → Live portfolio integration → Run workflow**에서 실행합니다. [검증 스크립트와 준비](scripts/portfolio/README.md) · [실행 결과](docs/verification.md)
 
 ## 프로젝트 저장소
 

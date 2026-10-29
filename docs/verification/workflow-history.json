@@ -1,0 +1,70 @@
+{
+  "diagnosticId": 17,
+  "history": [
+    {
+      "historyId": 5,
+      "action": "REVIEW_APPROVED",
+      "previousStatus": "RETURNED",
+      "newStatus": "COMPLETED",
+      "performedBy": {
+        "userId": 1,
+        "name": "김심사(ESG)",
+        "role": "REVIEWER"
+      },
+      "comment": "시연: 보완 검토 후 최종 승인.",
+      "timestamp": "2026-10-29T05:51:06.57829"
+    },
+    {
+      "historyId": 4,
+      "action": "REVIEW_REVISION_REQUIRED",
+      "previousStatus": "REVIEWING",
+      "newStatus": "RETURNED",
+      "performedBy": {
+        "userId": 1,
+        "name": "김******)",
+        "role": "REVIEWER"
+      },
+      "comment": "시연: 월별 사용량 원장과 담당자 서명 증빙을 보완해 주세요.",
+      "timestamp": "2026-10-29T05:51:05.219676"
+    },
+    {
+      "historyId": 3,
+      "action": "APPROVAL_APPROVED",
+      "previousStatus": "SUBMITTED",
+      "newStatus": "APPROVED",
+      "performedBy": {
+        "userId": 4,
+        "name": "김******)",
+        "role": "APPROVER"
+      },
+      "comment": "증빙 검토 완료. 원청 심사를 요청합니다.",
+      "timestamp": "2026-10-29T05:51:03.362811"
+    },
+    {
+      "historyId": 2,
+      "action": "SUBMITTED",
+      "previousStatus": "WRITING",
+      "newStatus": "SUBMITTED",
+      "performedBy": {
+        "userId": 5,
+        "name": "이******)",
+        "role": "DRAFTER"
+      },
+      "comment": "증빙과 AI 분석 결과 검토를 요청합니다.",
+      "timestamp": "2026-10-29T05:51:01.478016"
+    },
+    {
+      "historyId": 1,
+      "action": "CREATED",
+      "previousStatus": null,
+      "newStatus": "WRITING",
+      "performedBy": {
+        "userId": 5,
+        "name": "이기안(포스코)",
+        "role": "DRAFTER"
+      },
+      "comment": null,
+      "timestamp": "2026-10-29T05:50:46.224292"
+    }
+  ]
+}
