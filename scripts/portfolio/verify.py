@@ -72,6 +72,21 @@ async def external_preflight(image):
     await sdk.close()
 
 
+def analyze_attempt(diagnostic_id, token, hints):
+    accepted = req('POST', f'/ai/run/diagnostics/{diagnostic_id}/submit', token, json={'slotHints':hints})
+    deadline = time.monotonic()+240
+    while time.monotonic()<deadline:
+        state = req('GET', f'/ai/run/diagnostics/{diagnostic_id}/status', token)
+        assert state['requestId']==accepted['requestId'], 'Accepted analysis attempt was replaced'
+        assert state['status']!='FAILED', 'AI attempt failed: '+str(state.get('errorCode'))
+        if state['status']=='SUCCEEDED':
+            result=req('GET',f'/ai/run/diagnostics/{diagnostic_id}/result', token)
+            assert result['id']==state['resultId'], 'Historical result was mistaken for current analysis'
+            return result
+        time.sleep(1)
+    raise AssertionError('AI attempt did not reach a terminal state')
+
+
 def screenshot(page, name, title=None):
     page.wait_for_timeout(1100)
     if title:
@@ -178,14 +193,7 @@ try:
         page.goto(WEB+f'/diagnostics/{diagnostic_id}/files')
         screenshot(page,'02-upload')
         before=len((OUT/'ai-usage.jsonl').read_text().splitlines()) if (OUT/'ai-usage.jsonl').exists() else 0
-        req('POST',f'/ai/run/diagnostics/{diagnostic_id}/submit',drafter,json={'slotHints':docs})
-        deadline=time.monotonic()+240; result=None
-        while time.monotonic()<deadline:
-            r=api.get(f'/ai/run/diagnostics/{diagnostic_id}/result',headers={'Authorization':'Bearer '+drafter})
-            if r.status_code==200:
-                result=r.json()['data'];break
-            time.sleep(2)
-        assert result, 'AI result was not persisted before deadline'
+        result=analyze_attempt(diagnostic_id,drafter,docs)
         (OUT/'analysis-result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
         assert len(result['details']['slot_results']) >= len(docs)
         calls=[json.loads(line) for line in (OUT/'ai-usage.jsonl').read_text().splitlines()][before:]
@@ -215,11 +223,59 @@ try:
         check('Reviewer requests revision; PostgreSQL diagnostic status RETURNED')
         page.goto(WEB+f'/diagnostics/{diagnostic_id}')
         screenshot(page,'06-revision','보완')
-        req('PATCH',f'/reviews/{review_id}',reviewer,json={'decision':'APPROVED','comment':'시연: 보완 검토 후 최종 승인.'})
-        assert db.execute('SELECT status FROM diagnostic WHERE diagnostic_id=%s',(diagnostic_id,)).fetchone()[0]=='COMPLETED'
-        check('Reviewer final approval after revision request; PostgreSQL COMPLETED')
+        # Complete the drafter revision loop instead of the reviewer's direct re-approval path.
+        old_ethics_id=next(d['file_id'] for d in docs if d['slot_name']=='esg.ethics.code')
+        req('DELETE',f'/files/{old_ethics_id}',drafter)
+        revised=fitz.open(); revised_page=revised.new_page()
+        revised_text='윤리강령 보완본\n부패 금품 이해충돌 공정 인권 괴롭힘 개인정보 정보보호 사고 보호 징계\nDate: '+date.today().isoformat()+'\nSignature: Demo User\nSynthetic portfolio validation only.'
+        revised_page.insert_textbox(fitz.Rect(40,40,550,700),revised_text,fontname='korea',fontsize=14)
+        revised_data=revised.tobytes(deflate=True,garbage=4); revised.close()
+        uploaded=req('POST',f'/diagnostics/{diagnostic_id}/files',drafter,files={'file':('ethics_code_revised.pdf',revised_data,'application/pdf')})
+        revised_file_id=str(uploaded['fileId'])
+        assert revised_file_id!=old_ethics_id
+        for d in docs:
+            if d['slot_name']=='esg.ethics.code': d['file_id']=revised_file_id
+        deadline=time.monotonic()+60
+        while time.monotonic()<deadline:
+            rows=req('GET',f'/diagnostics/{diagnostic_id}/files',drafter)
+            if len(rows)==len(docs) and all(x['parsingStatus']=='SUCCESS' for x in rows):break
+            time.sleep(1)
+        else: raise AssertionError('Revised file did not become ready')
+        assert all(str(x['fileId'])!=old_ethics_id for x in rows)
+        preview=req('POST',f'/ai/run/diagnostics/{diagnostic_id}/preview',drafter,json={'fileIds':[int(d['file_id']) for d in docs],'removedFileIds':[old_ethics_id]})
+        assert not preview['missing_required_slots']
+        assert all(h['file_id']!=old_ethics_id for h in preview['slot_hint'])
+        check('Drafter replaces original evidence, preserves nine-slot coverage and removes stale preview hint')
+        page.goto(WEB+f'/diagnostics/{diagnostic_id}/files')
+        screenshot(page,'07-reupload')
+        revised_result=analyze_attempt(diagnostic_id,drafter,docs)
+        assert revised_result['id']!=result['id']
+        ethics=next(x for x in revised_result['details']['slot_results'] if x['slot_name']=='esg.ethics.code')
+        assert revised_file_id in ethics['file_ids'] and old_ethics_id not in ethics['file_ids']
+        assert 'E8_SECTION_MISSING' not in ethics['reasons']
+        (OUT/'analysis-result-revised.json').write_text(json.dumps(revised_result,ensure_ascii=False,indent=2))
+        all_calls=[json.loads(line) for line in (OUT/'ai-usage.jsonl').read_text().splitlines()]
+        assert all(c['success'] for c in all_calls), 'Provider failure was replaced by fallback output'
+        check('Reanalysis stores a new result linked to revised evidence and clears the ethics section finding')
         page.goto(WEB+f'/diagnostics/{diagnostic_id}')
-        screenshot(page,'07-completed')
+        screenshot(page,'08-reanalysis','AI 분석 결과')
+        resubmitted=req('POST',f'/diagnostics/{diagnostic_id}/submit',drafter,json={'submitComment':'보완 증빙과 재분석 결과를 제출합니다.'})
+        assert resubmitted['approvalId']==approval_id
+        req('PATCH',f'/approvals/{approval_id}',approver,json={'decision':'APPROVED','comment':'보완 자료 재검토 완료.'})
+        forwarded=req('POST',f'/approvals/{approval_id}/submit-to-reviewer',approver,json={})
+        assert forwarded['reviewId']==review_id
+        assert db.execute('SELECT count(*) FROM approval WHERE diagnostic_id=%s',(diagnostic_id,)).fetchone()[0]==1
+        assert db.execute('SELECT count(*) FROM review WHERE diagnostic_id=%s',(diagnostic_id,)).fetchone()[0]==1
+        check('Re-submission reuses Approval and Review IDs and returns to original-company review')
+        reviewer_page.goto(WEB+f'/dashboard/esg/review/{review_id}')
+        screenshot(reviewer_page,'09-resubmitted-review')
+        req('PATCH',f'/reviews/{review_id}',reviewer,json={'decision':'APPROVED','comment':'보완 증빙과 새로운 분석 결과 검토 후 최종 승인.'})
+        assert db.execute('SELECT status FROM diagnostic WHERE diagnostic_id=%s',(diagnostic_id,)).fetchone()[0]=='COMPLETED'
+        assert db.execute('SELECT count(*) FROM ai_analysis_result WHERE diagnostic_id=%s',(diagnostic_id,)).fetchone()[0]==2
+        check('Final approval after actual revision and re-submission; two analysis histories, PostgreSQL COMPLETED')
+        report['revision']={'original_file_id':old_ethics_id,'revised_file_id':revised_file_id,'initial_result_id':result['id'],'revised_result_id':revised_result['id']}
+        page.goto(WEB+f'/diagnostics/{diagnostic_id}')
+        screenshot(page,'10-completed')
         history=req('GET',f'/diagnostics/{diagnostic_id}/history',drafter)
         (OUT/'workflow-history.json').write_text(json.dumps(history,ensure_ascii=False,indent=2))
         check('Workflow audit history is queryable')

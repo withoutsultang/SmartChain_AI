@@ -1,6 +1,9 @@
 name: Live portfolio integration
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/live-integration.yml']
 permissions:
   contents: read
 concurrency:
@@ -62,12 +65,14 @@ jobs:
           npm install --no-audit --no-fund
           npm run test:preview
           npm run test:auth
+          npm run test:analysis
           npm run build
       - name: Install AI-run and browser dependencies
         run: |
           pip install 'fastapi>=0.110,<1' 'uvicorn>=0.27,<1' 'pydantic>=2.6,<3' python-dotenv httpx openai pandas openpyxl PyMuPDF Pillow PyYAML 'psycopg[binary]' playwright python-multipart
           python -m playwright install --with-deps chromium
           python -m unittest discover -s ai/tests -v
+          python ai/scripts/verify_slot_contract.py --backend backend
       - name: Start isolated localhost backend, AI API and actual frontend
         run: |
           mkdir -p /tmp/portfolio-results
