@@ -102,7 +102,22 @@
       "detail": null
     },
     {
-      "name": "Reviewer final approval after revision request; PostgreSQL COMPLETED",
+      "name": "Drafter replaces original evidence, preserves nine-slot coverage and removes stale preview hint",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Reanalysis stores a new result linked to revised evidence and clears the ethics section finding",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Re-submission reuses Approval and Review IDs and returns to original-company review",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Final approval after actual revision and re-submission; two analysis histories, PostgreSQL COMPLETED",
       "passed": true,
       "detail": null
     },
@@ -118,12 +133,18 @@
     }
   ],
   "sources": {
-    "backend": "d259f900d798cadc210d556b574bfc456f5035d8",
-    "frontend": "7a4997f7a39130102057300a6962433f16806fb8",
-    "ai": "e51f0586b3911a5c90e0b05d197d7d0c0d44ab0b"
+    "backend": "ce785b12ec22bcc0b49f98c26f3b778c87caff3d",
+    "frontend": "b6c76c350250f51b928fe0d9df33d7f5608e594c",
+    "ai": "a58903922d9198f9bf5888dd852ca2022bd4e798"
   },
   "environment": "isolated localhost services on GitHub Actions",
   "synthetic_data": true,
+  "revision": {
+    "original_file_id": "4",
+    "revised_file_id": "10",
+    "initial_result_id": 1,
+    "revised_result_id": 2
+  },
   "workflow_ids": {
     "diagnostic": 17,
     "approval": 6,

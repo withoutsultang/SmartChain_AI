@@ -1,51 +1,42 @@
 # SmartChain 핵심 업무 흐름 실행 검증
 
-검증일: 2026-10-29. 개인 포트폴리오 저장소의 코드를 실제 실행해, AI 응답이 파일·기안·결재·심사 데이터로 연결되는 경로를 확인했습니다.
+검증일: 2026-10-30. 실제 서비스와 외부 AI를 연결해 증빙 교체·재분석·재제출까지 검증했습니다.
 
 ## 확인 결과
 
 |범위|결과|근거|
 |---|---|---|
-|백엔드 전체 테스트·빌드|486개 중 485개 통과, 1개 건너뜀, 실패·오류 0개; clean build 성공|[테스트 집계](verification/backend-test-summary.json) · [백엔드 빌드](https://github.com/withoutsultang/SmartChain_Backend/actions/runs/40881578096)|
-|로그인 트랜잭션 회귀 시험|H2에서 서비스 트랜잭션 종료 후 실패 횟수·잠금 조회 성공|[회귀 시험](https://github.com/withoutsultang/SmartChain_Backend/blob/d259f900d798cadc210d556b574bfc456f5035d8/src/test/java/com/smartchain/platform/domain/auth/service/LoginFailurePersistenceTest.java)|
-|PostgreSQL 인증 검증|실제 HTTP 로그인 실패 5회가 각각 커밋됨; locked_until 저장; 올바른 비밀번호도 잠금 중 거절|[성공 실행](https://github.com/withoutsultang/SmartChain_AI/actions/runs/40825484560)|
-|프론트 빌드·회귀 시험|프로덕션 빌드 및 Preview 3개·로그인 보안 정책 3개 통과|[프론트 실행](https://github.com/withoutsultang/SmartChain_Frontend/actions/runs/40824538098)|
-|AI 응답 계약|실제 교차검증 결과의 숫자·배열·중첩 JSON 보존 등 3개 통과|[계약 시험](../tests/test_cross_validation_contract.py)|
-|외부 AI 인증|gpt-4o-mini·gpt-5.1 실제 응답, Clova OCR의 합성 문서 문자 인식 성공|[검증 JSON](verification/verification.json)|
-|핵심 업무 흐름|기안 → 업로드 → Preview → AI Submit → 결재 → 원청 제출·Review 생성 → 보완 요청 → 최종 승인·이력 확인 성공|[상태 이력](verification/workflow-history.json)|
-|시연 자료|실제 화면 7개, 7프레임·15.4초 GIF|[시연](https://github.com/withoutsultang/SmartChain_Frontend/tree/develop/docs/demo)|
+|백엔드 전체|495개 중 494개 통과·1개 건너뜀, 실패 0개, clean build 성공|[집계](verification/backend-test-summary.json) · [실행](https://github.com/withoutsultang/SmartChain_Backend/actions/runs/41058396126)|
+|PostgreSQL HTTP|권한 42개 + 업무 순환·장애 복구 9개, 총 51개 통과|[실행](https://github.com/withoutsultang/SmartChain_Backend/actions/runs/41057940415)|
+|프론트|회귀 시험 9개와 프로덕션 빌드 통과|[실행](https://github.com/withoutsultang/SmartChain_Frontend/actions/runs/41057900216)|
+|AI|응답 계약·OCR 복구·필수 슬롯 계약 시험 5개 통과|[실행](https://github.com/withoutsultang/SmartChain_AI/actions/runs/41057819667)|
+|실제 연동|OpenAI 두 모델·Clova OCR 및 전체 업무 순환, 17개 검사 통과|[최종 실행](https://github.com/withoutsultang/SmartChain_AI/actions/runs/41059678771) · [검증 JSON](verification/verification.json)|
+|시연|실제 화면 10개·22초 GIF|[시연](https://github.com/withoutsultang/SmartChain_Frontend/tree/develop/docs/demo)|
 
-## 실행 환경과 방법
+## 실제 재제출 순환
 
-GitHub Actions의 임시 호스트에서 PostgreSQL 16, Java 17/Spring Boot, Python 3.11/AI Run API, Node.js 22/Vite, Chromium을 localhost로 연결했습니다. Azure 배포 없이 실행했으며 팀 원본 저장소는 수정하지 않았습니다.
+기안 생성 → 합성 PDF 9개 업로드 → Preview → AI 분석 → 회사 결재 → 원청 심사 → 보완 요청 → 윤리강령 증빙 교체 → 재분석 → 재결재·재심사 → 최종 승인 순서로 실행했습니다.
 
-기안 생성은 브라우저 폼으로 수행했습니다. 파일 업로드, 분석 요청, 결재와 심사 변경은 인증된 실제 HTTP API로 수행하고, DB 상태와 실제 프론트 화면을 확인했습니다. 임시 데이터베이스의 캠페인 날짜는 실행 시점에 맞게 조정했습니다.
+첫 분석은 `NEED_CLARIFY / MEDIUM`과 윤리강령의 `E8_SECTION_MISSING`을 반환했습니다. 기안자가 파일 4를 삭제하고 필수 조항을 포함한 파일 10을 업로드했습니다. 재분석은 새 파일을 참조하는 결과 2를 저장했고, 윤리강령 보완 사유가 해소됐습니다. 최종 결과는 `PASS / LOW`입니다. 기존 결과 1도 이력으로 유지했습니다. 같은 Approval·Review ID를 재사용해 마지막 기안 상태 `COMPLETED`를 확인했습니다.
 
-AI Preview가 현재 요구하는 ESG 증빙 9개를 합성 PDF로 생성했습니다. 이 중 윤리강령은 이미지 기반 스캔 PDF로 만들어 OCR 경로를 사용했습니다. 실제 분석 결과는 9개 슬롯의 판정과 `E8_SECTION_MISSING` 보완 사유를 반환했고, `OCR_FAILED` 사유는 없었습니다. 최종 AI 판정은 `NEED_CLARIFY / MEDIUM`으로 저장됐습니다. 이는 합성 시험 자료에 대한 판정이며 실제 기업의 성과 수치나 모델 정확도 측정값이 아닙니다.
+[첫 분석](verification/analysis-result.json) · [재분석](verification/analysis-result-revised.json) · [업무 이력](verification/workflow-history.json)
 
-분석 파이프라인에서 모델 호출 11회가 모두 성공했습니다. 기본 문구로 대체된 API 실패를 성공으로 세지 않도록 모델별 성공 여부를 별도로 관측했습니다. [분석 결과](verification/analysis-result.json) · [응답 내용·키를 제외한 사용량](verification/ai-usage.jsonl)
+두 분석 파이프라인의 모델 호출 21회가 모두 성공했습니다. 모델별 성공 여부를 관측해 API 오류로 기본 문구를 반환한 경우를 성공으로 세지 않았습니다. 사전 인증 확인의 모델 호출 2회는 이 21회와 별도입니다. [사용량 기록](verification/ai-usage.jsonl)
 
-보완 요청 뒤 최종 승인은 서비스의 수신자 재승인 경로로 확인했습니다. 협력사가 증빙을 새로 업로드하는 재제출 시나리오, YOLO 인원 감지, 챗봇/RAG와 외부 기사 리스크 서비스는 이 실행의 대상에 포함하지 않았습니다.
+## 실행 방법과 근거의 범위
 
-## 재검증 중 반영한 개선
+GitHub Actions의 임시 호스트에서 PostgreSQL 16, Java 17/Spring Boot, Python 3.11/AI Run API, Node.js 22/Vite, Chromium을 localhost로 연결했습니다. 사용자 PC나 Azure에 배포한 실행은 아닙니다. 기안 생성은 브라우저 폼으로 수행했습니다. 업로드·분석·후속 상태 변경은 인증된 실제 HTTP API로 실행하고 DB 상태와 실제 프론트 화면을 확인했습니다.
 
-- 인증 실패 예외 후에도 실패 횟수와 계정 잠금이 커밋되도록 보완한 로직을 실제 PostgreSQL에서 확인했습니다.
-- 개발 환경에서 사이트 키를 비운 경우 로컬 로그인 정책을 사용할 수 있도록 수정하고, 프로덕션에서는 CAPTCHA를 생략하지 않는 회귀 시험을 추가했습니다. CAPTCHA 준비·실행 실패 시 사용자에게 재시도 안내를 표시합니다.
-- 임시 실행 설정은 원본의 50MB multipart 한도와 local 프로필을 보존하도록 구성했습니다.
-- 실제 API 검증과 Azure 배포는 수동 실행으로 구성했습니다. 일반 회귀 시험은 API를 호출하지 않습니다.
+모든 문서는 합성 시험 자료입니다. 위 판정 변화는 해당 자료의 보완·재처리 증거이며, 실제 기업 성과나 모델 정확도 수치가 아닙니다. Clova OCR도 실제 호출했습니다. 로그인 실패 5회 각각의 커밋과 계정 잠금도 이 실행에서 확인했습니다. 임시 DB 캠페인 날짜만 실행일에 맞췄습니다.
 
-이 개선은 포트폴리오 재검증 시점의 보강입니다. 팀 프로젝트 당시 기여와 구분하며, 당시 개인 기여는 각 저장소 README의 원본 PR에 연결했습니다.
+시간 초과·HTTP 503·동시 중복 제출·만료된 작업의 늦은 응답·Preview 실패는 별도의 PostgreSQL HTTP 시험에서 외부 응답을 제어해 검증했습니다. AI의 OCR 오류 후 재처리는 실제 PDF 추출 경로에서 OCR 응답을 제어해 시험했습니다. 장애 주입 시험에는 유료 API 호출이 없습니다. [복구 설계·9개 시험 상세](https://github.com/withoutsultang/SmartChain_Backend/blob/dev/docs/workflow-recovery-verification.md)
 
-## 추가 AI 권한 검증
+ESG 필수 슬롯은 [기준 JSON](../contracts/esg-required-slots.json)의 9개로 정렬했습니다. 실제 AI 엔진·백엔드 공통 설정·시험 설정을 두 저장소의 CI에서 대조합니다. YOLO 인원 감지·챗봇/RAG·외부 기사 리스크는 이 실행의 범위가 아닙니다.
 
-동일한 PostgreSQL HTTP 시험으로 보완 전후를 대조하고, AI 5개 경로의 회사·도메인·소유권 검사 및 Preview 파일 소속 검증 **42개를 통과**했습니다. 정상 기안자·결재자·도메인 수신자의 접근도 함께 확인했습니다. 권한 시험은 외부 AI와 비동기 실행 경계만 대체하므로 유료 API를 호출하지 않습니다. 이 추가 검증은 [Backend acc662fb](https://github.com/withoutsultang/SmartChain_Backend/commit/acc662fb69c1554127966ece5251980bec917eee)를 대상으로 했습니다.
+## 검증 소스
 
-[상세 근거](https://github.com/withoutsultang/SmartChain_Backend/blob/dev/docs/ai-authorization-verification.md) · [PostgreSQL HTTP 실행](https://github.com/withoutsultang/SmartChain_Backend/actions/runs/40881578094)
+- [Backend ce785b12](https://github.com/withoutsultang/SmartChain_Backend/commit/ce785b12ec22bcc0b49f98c26f3b778c87caff3d)
+- [Frontend b6c76c35](https://github.com/withoutsultang/SmartChain_Frontend/commit/b6c76c350250f51b928fe0d9df33d7f5608e594c)
+- [AI a5890392](https://github.com/withoutsultang/SmartChain_AI/commit/a58903922d9198f9bf5888dd852ca2022bd4e798)
 
-## 최초 통합 시연에 사용한 소스
-
-- [Backend d259f900](https://github.com/withoutsultang/SmartChain_Backend/commit/d259f900d798cadc210d556b574bfc456f5035d8)
-- [Frontend 7a4997f7](https://github.com/withoutsultang/SmartChain_Frontend/commit/7a4997f7a39130102057300a6962433f16806fb8)
-- [AI e51f0586](https://github.com/withoutsultang/SmartChain_AI/commit/e51f0586b3911a5c90e0b05d197d7d0c0d44ab0b)
-
-실제 통합 검증은 [스크립트](../scripts/portfolio/README.md)와 `Live portfolio integration` 수동 실행으로 재현할 수 있습니다. Secrets 원문은 결과 파일·로그·코드에 저장하지 않습니다.
+이번 개선은 개인 포트폴리오 재검증 시점의 보강입니다. 당시 개인 기여는 각 README의 원본 PR로 구분했습니다. 팀 원본 저장소와 마스터 포트폴리오는 수정하지 않았습니다. 실제 연동은 [검증 스크립트](../scripts/portfolio/README.md)와 `Live portfolio integration` 수동 실행으로 재현합니다. Secrets 원문을 코드·결과 파일에 저장하지 않습니다.

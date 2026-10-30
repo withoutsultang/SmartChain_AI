@@ -12,9 +12,9 @@
 
 ![기안 생성부터 AI 분석·결재·심사까지 실제 화면 시연](https://raw.githubusercontent.com/withoutsultang/SmartChain_Frontend/develop/docs/demo/smartchain-demo.gif)
 
-**기안 생성 → 증빙 9개 업로드·분류 → 실제 AI 분석 → 회사 결재 → 원청 심사·보완 요청 → 최종 승인**을 연결했습니다. 합성 문서로 실제 서비스를 실행해 캡처한 15.4초 시연입니다.
+**기안 생성 → 증빙 9개 업로드·분류 → 실제 AI 분석 → 회사 결재 → 원청 보완 요청 → 증빙 수정·재분석·재제출 → 최종 승인**을 연결했습니다. 합성 문서로 실제 서비스를 실행해 캡처한 22초 시연입니다.
 
-[화면 7개 보기](https://github.com/withoutsultang/SmartChain_Frontend/tree/develop/docs/demo) · [실행 결과와 검증 근거](https://github.com/withoutsultang/SmartChain_AI/blob/main/docs/verification.md)
+[화면 10개 보기](https://github.com/withoutsultang/SmartChain_Frontend/tree/develop/docs/demo) · [실행 결과와 검증 근거](https://github.com/withoutsultang/SmartChain_AI/blob/main/docs/verification.md)
 
 ## 플랫폼 구조
 
@@ -40,6 +40,12 @@ AI 엔진은 팀 AI 파트의 결과물이며, 김건우는 **공통 AI 계약·
 - [파일 준비 상태·날짜 검증](https://github.com/SmartChain-HD/Backend/pull/210): 외부 AI 호출 전 전제조건과 오류 코드 분리
 - [Preview 타임아웃 분리](https://github.com/SmartChain-HD/Backend/pull/212): 경량 분류와 전체 검증의 대기 정책 분리
 - [교차검증 DTO](https://github.com/SmartChain-HD/Backend/pull/231) · [결과 화면](https://github.com/SmartChain-HD/Frontend/pull/407): 비교 대상·판정·사유를 업무 언어로 구조화
+
+## 증빙 계약과 재처리 검증
+
+ESG 필수 증빙 **9개**의 [공통 계약](contracts/esg-required-slots.json)을 기준으로 AI 엔진·백엔드 공통 설정·시험 설정을 CI에서 대조합니다. OCR 실패가 `OCR_FAILED / NEED_FIX`로 드러나고, 같은 자료를 다시 처리할 때 이전 실패가 남지 않는 것도 실제 추출 코드와 API 응답으로 검증합니다.
+
+실제 연동 시연에서는 보완한 윤리강령을 새 파일로 업로드하고 재분석해 최초 보완 사유가 해소되는 것을 확인했습니다. [검증 결과](docs/verification.md) · [재제출·복구 설계](https://github.com/withoutsultang/SmartChain_Backend/blob/dev/docs/workflow-recovery-verification.md)
 
 ## 엔진의 주요 구성
 

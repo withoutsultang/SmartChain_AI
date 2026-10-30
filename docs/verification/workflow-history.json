@@ -2,17 +2,43 @@
   "diagnosticId": 17,
   "history": [
     {
-      "historyId": 5,
+      "historyId": 7,
       "action": "REVIEW_APPROVED",
-      "previousStatus": "RETURNED",
+      "previousStatus": "REVIEWING",
       "newStatus": "COMPLETED",
       "performedBy": {
         "userId": 1,
         "name": "김심사(ESG)",
         "role": "REVIEWER"
       },
-      "comment": "시연: 보완 검토 후 최종 승인.",
-      "timestamp": "2026-10-29T05:51:06.57829"
+      "comment": "보완 증빙과 새로운 분석 결과 검토 후 최종 승인.",
+      "timestamp": "2026-10-30T13:03:50.212335"
+    },
+    {
+      "historyId": 6,
+      "action": "APPROVAL_APPROVED",
+      "previousStatus": "SUBMITTED",
+      "newStatus": "APPROVED",
+      "performedBy": {
+        "userId": 4,
+        "name": "김******)",
+        "role": "APPROVER"
+      },
+      "comment": "보완 자료 재검토 완료.",
+      "timestamp": "2026-10-30T13:03:48.841158"
+    },
+    {
+      "historyId": 5,
+      "action": "SUBMITTED",
+      "previousStatus": "RETURNED",
+      "newStatus": "SUBMITTED",
+      "performedBy": {
+        "userId": 5,
+        "name": "이******)",
+        "role": "DRAFTER"
+      },
+      "comment": "보완 증빙과 재분석 결과를 제출합니다.",
+      "timestamp": "2026-10-30T13:03:48.829299"
     },
     {
       "historyId": 4,
@@ -24,8 +50,8 @@
         "name": "김******)",
         "role": "REVIEWER"
       },
-      "comment": "시연: 월별 사용량 원장과 담당자 서명 증빙을 보완해 주세요.",
-      "timestamp": "2026-10-29T05:51:05.219676"
+      "comment": "시연: 윤리강령의 필수 조항을 보완해 주세요.",
+      "timestamp": "2026-10-30T13:03:30.40616"
     },
     {
       "historyId": 3,
@@ -38,7 +64,7 @@
         "role": "APPROVER"
       },
       "comment": "증빙 검토 완료. 원청 심사를 요청합니다.",
-      "timestamp": "2026-10-29T05:51:03.362811"
+      "timestamp": "2026-10-30T13:03:28.348309"
     },
     {
       "historyId": 2,
@@ -51,7 +77,7 @@
         "role": "DRAFTER"
       },
       "comment": "증빙과 AI 분석 결과 검토를 요청합니다.",
-      "timestamp": "2026-10-29T05:51:01.478016"
+      "timestamp": "2026-10-30T13:03:26.26465"
     },
     {
       "historyId": 1,
@@ -64,7 +90,7 @@
         "role": "DRAFTER"
       },
       "comment": null,
-      "timestamp": "2026-10-29T05:50:46.224292"
+      "timestamp": "2026-10-30T13:02:59.480262"
     }
   ]
 }

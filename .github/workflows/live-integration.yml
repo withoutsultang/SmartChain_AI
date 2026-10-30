@@ -1,9 +1,6 @@
 name: Live portfolio integration
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/live-integration.yml']
 permissions:
   contents: read
 concurrency:
