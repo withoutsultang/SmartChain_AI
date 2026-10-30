@@ -97,7 +97,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CLOVA_INVOKE_URL: ${{ secrets.CLOVA_INVOKE_URL }}
           CLOVA_OCR_SECRET: ${{ secrets.CLOVA_OCR_SECRET }}
-      - name: Live providers, PostgreSQL transactions, workflow and browser captures
+      - name: Verify live evidence revision, reanalysis and final approval
         run: PYTHONPATH="$PWD/ai/apps/ai_run_api" python ai/scripts/portfolio/verify.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

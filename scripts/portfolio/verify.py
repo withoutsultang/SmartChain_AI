@@ -218,7 +218,7 @@ try:
         reviewer_context,reviewer_page=browser_login(browser,'reviewer.esg@hdhhi.co.kr')
         reviewer_page.goto(WEB+f'/dashboard/esg/review/{review_id}')
         screenshot(reviewer_page,'05-review')
-        req('PATCH',f'/reviews/{review_id}',reviewer,json={'decision':'REVISION_REQUIRED','comment':'시연: 월별 사용량 원장과 담당자 서명 증빙을 보완해 주세요.'})
+        req('PATCH',f'/reviews/{review_id}',reviewer,json={'decision':'REVISION_REQUIRED','comment':'시연: 윤리강령의 필수 조항을 보완해 주세요.'})
         assert db.execute('SELECT status FROM diagnostic WHERE diagnostic_id=%s',(diagnostic_id,)).fetchone()[0]=='RETURNED'
         check('Reviewer requests revision; PostgreSQL diagnostic status RETURNED')
         page.goto(WEB+f'/diagnostics/{diagnostic_id}')
