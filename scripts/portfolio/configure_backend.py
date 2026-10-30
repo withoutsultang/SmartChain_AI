@@ -5,6 +5,7 @@ source = Path('backend/src/main/resources/application.yaml').read_text()
 base = yaml.safe_load(source.split('---')[0])
 config = yaml.safe_load(source.split('---')[1])
 config['spring']['servlet'] = base['spring']['servlet']
+config['ai']['slots'] = base['ai']['slots']
 config['spring'].pop('profiles', None)
 config['spring'].pop('config', None)
 config['spring']['profiles'] = {'active': 'local'}

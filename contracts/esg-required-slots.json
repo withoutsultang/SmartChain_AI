@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "domain": "esg",
+  "required_slots": [
+    "esg.energy.electricity.usage",
+    "esg.energy.gas.usage",
+    "esg.energy.water.usage",
+    "esg.ethics.code",
+    "esg.ethics.distribution.log",
+    "esg.ethics.pledge",
+    "esg.ethics.poster.image",
+    "esg.hazmat.inventory",
+    "esg.hazmat.msds"
+  ]
+}

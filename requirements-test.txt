@@ -1,0 +1,10 @@
+# API-run regression tests only; no model downloads or live API calls.
+fastapi>=0.110,<1
+pydantic>=2.6,<3
+python-dotenv>=1
+httpx>=0.27
+openai>=1.30
+pandas>=2.1
+openpyxl>=3.1
+PyMuPDF>=1.24
+PyYAML>=6
